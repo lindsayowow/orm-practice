@@ -47,18 +47,20 @@ public class ContactController {
             contact.setEmail(updatedContact.getEmail());
             contact.setPhoneNumber(updatedContact.getPhoneNumber());
 
-            // Replace addresses and set back-reference
-            contact.setAddresses(updatedContact.getAddresses());
+            // FIX: safely replace the address list
+            contact.getAddresses().clear();
 
             if (updatedContact.getAddresses() != null) {
                 for (Address address : updatedContact.getAddresses()) {
                     address.setContact(contact);
+                    contact.getAddresses().add(address);
                 }
             }
 
             return contactRepository.save(contact);
         }).orElse(null);
     }
+
 
     @DeleteMapping("/{id}")
     public void deleteContact(@PathVariable int id) {
