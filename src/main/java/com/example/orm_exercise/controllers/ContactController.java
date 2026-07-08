@@ -1,6 +1,7 @@
 package com.example.orm_exercise.controllers;
 
 import com.example.orm_exercise.models.Contact;
+import com.example.orm_exercise.models.Address;
 import com.example.orm_exercise.repositories.ContactRepository;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,15 +28,34 @@ public class ContactController {
 
     @PostMapping
     public Contact createContact(@RequestBody Contact contact) {
+
+        // IMPORTANT: set the back-reference on each Address
+        if (contact.getAddresses() != null) {
+            for (Address address : contact.getAddresses()) {
+                address.setContact(contact);
+            }
+        }
+
         return contactRepository.save(contact);
     }
 
     @PutMapping("/{id}")
     public Contact updateContact(@PathVariable int id, @RequestBody Contact updatedContact) {
         return contactRepository.findById(id).map(contact -> {
+
             contact.setName(updatedContact.getName());
             contact.setEmail(updatedContact.getEmail());
             contact.setPhoneNumber(updatedContact.getPhoneNumber());
+
+            // Replace addresses and set back-reference
+            contact.setAddresses(updatedContact.getAddresses());
+
+            if (updatedContact.getAddresses() != null) {
+                for (Address address : updatedContact.getAddresses()) {
+                    address.setContact(contact);
+                }
+            }
+
             return contactRepository.save(contact);
         }).orElse(null);
     }
